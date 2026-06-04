@@ -1,0 +1,4 @@
+.env
+services/auth/node_modules/*
+services/auth/dist/*
+services/auth/build/*
