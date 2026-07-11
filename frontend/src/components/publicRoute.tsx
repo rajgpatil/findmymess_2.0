@@ -1,4 +1,4 @@
-import { useAppData } from "../context/AppProviderProps.tsx";
+import { useAppData } from "../context/AppContext.tsx";
 import { Navigate, Outlet } from "react-router-dom";
 
 const PublicRoute = () => {
