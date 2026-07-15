@@ -3,3 +3,4 @@ services/auth/node_modules/*
 services/auth/dist/*
 services/auth/build/*
 services/restaurant/node_modules/*
+services/utils/node_modules/*
