@@ -2,3 +2,4 @@
 services/auth/node_modules/*
 services/auth/dist/*
 services/auth/build/*
+services/restaurant/node_modules/*
