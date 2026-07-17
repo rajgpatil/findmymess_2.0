@@ -22,8 +22,89 @@ export interface AppContextType {
   location: LocationData | null;
   loadingLocation: boolean;
   city: string;
-    // cart: ICart[] | null;
+  // cart: ICart[] | null;
   // fetchCart: () => Promise<void>;
   // subTotal: number;
   // quauntity: number;
+}
+
+export interface IMenuItem {
+  _id: string;
+  restaurantId: string;
+  name: string;
+  description: string;
+  image?: string;
+  price: number;
+  isAvailable: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IRestaurant {
+  _id: string;
+  name: string;
+  description?: string;
+  image: string;
+  ownerId: string;
+  phone: number;
+  isVerified: boolean;
+
+  autoLocation: {
+    type: "Point";
+    coordinates: [number, number]; //[longitude, latitude]
+    formattedAddress: string;
+  };
+  isOpen: boolean;
+  createdAt: Date;
+}
+
+export interface IOrder {
+  _id: string;
+  userId: string;
+  restaurantId: string;
+  restaurantName: string;
+  riderId?: string | null;
+  riderPhone: number | null;
+  riderName: string | null;
+  distance: number;
+  riderAmount: number;
+
+  items: {
+    itemId: string;
+    name: string;
+    price: number;
+    quauntity: number;
+  }[];
+
+  subtotal: number;
+  deliveryFee: number;
+  platfromFee: number;
+  totalAmount: number;
+
+  addressId: string;
+
+  deliveryAddress: {
+    fromattedAddress: string;
+    mobile: number;
+    latitude: number;
+    longitude: number;
+  };
+
+  status:
+    | "placed"
+    | "accepted"
+    | "preparing"
+    | "ready_for_rider"
+    | "rider_assigned"
+    | "picked_up"
+    | "delivered"
+    | "cancelled";
+
+  paymentMethod: "razorpay" | "stripe";
+  paymentStatus: "pending" | "paid" | "failed";
+
+  expiresAt: Date;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
