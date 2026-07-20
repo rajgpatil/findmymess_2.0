@@ -54,7 +54,7 @@ export const isAuth = async (
     next();
   } catch (error) {
     res.status(500).json({
-      message: "Please Login - Jwt error",
+      message: error,
     });
   }
 };

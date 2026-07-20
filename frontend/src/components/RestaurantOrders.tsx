@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { IOrder } from "../types";
 // import { useSocket } from "../context/SocketContext";
-import audio from "../assets/quack.mp3";
+// import audio from "../assets/quack.mp3";
 import axios from "axios";
 import { restaurantService } from "../main";
 // import OrderCard from "./OrderCard";
@@ -23,10 +23,10 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
   // const { socket } = useSocket();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    audioRef.current = new Audio(audio);
-    audioRef.current.load();
-  }, []);
+  // useEffect(() => {
+  //   audioRef.current = new Audio(audio);
+  //   audioRef.current.load();
+  // }, []);
 
   const unlockAudio = () => {
     if (audioRef.current) {
