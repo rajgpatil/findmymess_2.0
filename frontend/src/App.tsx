@@ -1,7 +1,6 @@
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
 import SelectRole from "./pages/SelectRole";
 import PublicRoute from "./components/publicRoute";
 import ProtectedRoute from "./components/protectedRote";
@@ -37,7 +36,7 @@ const App = () => {
           </Route>
         </Routes>
       </BrowserRouter>
-      <Toaster />
+
     </>
   );
 };
