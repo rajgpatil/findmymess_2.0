@@ -7,7 +7,7 @@ import { VscLoading } from "react-icons/vsc";
 import axios from "axios";
 import { restaurantService } from "../main";
 import toast from "react-hot-toast";
-// import { useAppData } from "../context/AppContext";
+import { useAppData } from "../context/AppContext";
 
 interface MenuItemsProps {
   items: IMenuItem[];
@@ -57,7 +57,7 @@ const MenuItems = ({ items, onItemDeleted, isSeller }: MenuItemsProps) => {
     }
   };
 
-  // const { fetchCart } = useAppData();
+  const { fetchCart } = useAppData();
 
   const addToCart = async (restaurantId: string, itemId: string) => {
     try {
@@ -77,7 +77,7 @@ const MenuItems = ({ items, onItemDeleted, isSeller }: MenuItemsProps) => {
       );
 
       toast.success(data.message);
-      // fetchCart();
+      fetchCart();
     } catch (error: any) {
       toast.error(error.response.data.message);
     } finally {

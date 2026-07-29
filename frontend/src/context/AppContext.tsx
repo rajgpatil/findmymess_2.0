@@ -1,7 +1,13 @@
 import axios from "axios";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { authService } from "../main";
-import type { AppContextType, LocationData, User } from "../types";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import { authService, restaurantService } from "../main";
+import type { AppContextType, LocationData, User, ICart } from "../types";
 import { Toaster } from "react-hot-toast";
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -18,7 +24,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [city, setCity] = useState("Fecthing Location...");
-  const [quauntity, setQuauntity] = useState(0);
 
   async function fetchUser() {
     try {
@@ -51,7 +56,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
         );
         const data = await res.json();
 
@@ -63,9 +68,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
         setCity(
           data.address.city ||
-          data.address.town ||
-          data.address.village ||
-          "Your Location"
+            data.address.town ||
+            data.address.village ||
+            "Your Location",
         );
         setLoadingLocation(false);
       } catch (error) {
@@ -80,6 +85,32 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     });
   }, []);
 
+  const [cart, setCart] = useState<ICart[]>([]);
+  const [subTotal, setSubTotal] = useState(0);
+  const [quauntity, setQuauntity] = useState(0);
+
+  async function fetchCart() {
+    if (!user || user.role !== "customer") return;
+    try {
+      const { data } = await axios.get(`${restaurantService}/api/cart/all`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      setCart(data.cart || []);
+      setSubTotal(data.subtotal || 0);
+      setQuauntity(data.cartLength);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    if (user && user.role === "customer") {
+      fetchCart();
+    }
+  }, [user]);
 
   return (
     <AppContext.Provider
@@ -93,6 +124,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         location,
         loadingLocation,
         city,
+        cart,
+        fetchCart,
+        quauntity,
+        subTotal,
       }}
     >
       {children}

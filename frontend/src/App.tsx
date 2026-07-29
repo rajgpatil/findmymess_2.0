@@ -8,6 +8,8 @@ import { useAppData } from "./context/AppContext";
 import Navbar from "./components/navbar";
 import Account from "./pages/Account";
 import Restaurant from "./pages/Restaurant";
+import RestaurantPage from "./pages/RestaurantPage";
+import Cart from "./pages/Cart";
 const App = () => {
   const { user, loading } = useAppData();
 
@@ -33,10 +35,11 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/select-role" element={<SelectRole />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/restaurant/:id" element={<RestaurantPage />} />
+            <Route path="/cart" element={<Cart />} />
           </Route>
         </Routes>
       </BrowserRouter>
-
     </>
   );
 };
