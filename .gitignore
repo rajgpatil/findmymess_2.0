@@ -4,3 +4,5 @@ services/auth/dist/*
 services/auth/build/*
 services/restaurant/node_modules/*
 services/utils/node_modules/*
+services/realtime/node_modules/*
+services/realtime/dist/*
