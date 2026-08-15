@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { IOrder } from "../types";
-// import { useSocket } from "../context/SocketContext";
-// import audio from "../assets/quack.mp3";
+import { useSocket } from "../context/SocketContext";
+import audio from "../assets/quack.mp3";
 import axios from "axios";
 import { restaurantService } from "../main";
+import OrderCard from "./OrderCard";
 // import OrderCard from "./OrderCard";
 
 const ACTIVE_STATUSES = [
@@ -20,13 +21,13 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
   const [loading, setLoading] = useState(true);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
 
-  // const { socket } = useSocket();
+  const { socket } = useSocket();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // useEffect(() => {
-  //   audioRef.current = new Audio(audio);
-  //   audioRef.current.load();
-  // }, []);
+  useEffect(() => {
+    audioRef.current = new Audio(audio);
+    audioRef.current.load();
+  }, []);
 
   const unlockAudio = () => {
     if (audioRef.current) {
@@ -67,42 +68,42 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
     fetchOrders();
   }, [restaurantId]);
 
-  // useEffect(() => {
-  //   if (!socket) return;
+  useEffect(() => {
+    if (!socket) return;
 
-  //   const onNewOrder = () => {
-  //     console.log("New Order recived socket");
+    const onNewOrder = () => {
+      console.log("New Order recived socket");
 
-  //     if (audioUnlocked && audioRef.current) {
-  //       audioRef.current.currentTime = 0;
-  //       audioRef.current.play().catch((err) => {
-  //         console.error("Audio play failed:", err);
-  //       });
-  //     }
+      if (audioUnlocked && audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch((err) => {
+          console.error("Audio play failed:", err);
+        });
+      }
 
-  //     fetchOrders();
-  //   };
+      fetchOrders();
+    };
 
-  //   socket.on("order:new", onNewOrder);
+    socket.on("order:new", onNewOrder);
 
-  //   return () => {
-  //     socket.off("order:new", onNewOrder);
-  //   };
-  // }, [socket, audioUnlocked]);
+    return () => {
+      socket.off("order:new", onNewOrder);
+    };
+  }, [socket, audioUnlocked]);
 
-  // useEffect(() => {
-  //   if (!socket) return;
+  useEffect(() => {
+    if (!socket) return;
 
-  //   const onUpdateOrder = () => {
-  //     fetchOrders();
-  //   };
+    const onUpdateOrder = () => {
+      fetchOrders();
+    };
 
-  //   socket.on("order:rider_assigned", onUpdateOrder);
+    socket.on("order:rider_assigned", onUpdateOrder);
 
-  //   return () => {
-  //     socket.off("order:rider_assigned", onUpdateOrder);
-  //   };
-  // }, [socket]);
+    return () => {
+      socket.off("order:rider_assigned", onUpdateOrder);
+    };
+  }, [socket]);
 
   if (loading) {
     return <p className="text-gray-500">Loading Orders</p>;
@@ -145,13 +146,13 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
           <p className="text-sm text-gray-500">No Acitve orders</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* {activeOrders.map((order) => (
+            {activeOrders.map((order) => (
               <OrderCard
                 key={order._id}
                 order={order}
                 onStatusUpdate={fetchOrders}
               />
-            ))} */}
+            ))}
           </div>
         )}
       </div>
@@ -163,13 +164,13 @@ const RestaurantOrders = ({ restaurantId }: { restaurantId: string }) => {
           <p className="text-sm text-gray-500">No completed orders</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* {completedOrders.map((order) => (
+            {completedOrders.map((order) => (
               <OrderCard
                 key={order._id}
                 order={order}
                 onStatusUpdate={fetchOrders}
               />
-            ))} */}
+            ))}
           </div>
         )}
       </div>

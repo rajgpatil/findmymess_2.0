@@ -7,13 +7,13 @@ import cartRoutes from "./routes/cart.js";
 import addressRoutes from "./routes/address.js";
 import orderRoutes from "./routes/order.js";
 import cors from "cors";
-// import { connectRabbitMQ } from "./config/rabbitmq.js";
-// import { startPaymentConsumer } from "./config/payment.consumer.js";
+import { connectRabbitMQ } from "./config/rabbitmq.js";
+import { startPaymentConsumer } from "./config/payment.consumer.js";
 
 dotenv.config();
 
-// await connectRabbitMQ();
-// startPaymentConsumer();
+await connectRabbitMQ();
+startPaymentConsumer();
 
 const app = express();
 
