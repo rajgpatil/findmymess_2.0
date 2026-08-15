@@ -6,3 +6,6 @@ services/restaurant/node_modules/*
 services/utils/node_modules/*
 services/realtime/node_modules/*
 services/realtime/dist/*
+services/rider/node_modules/*
+services/rider/dist/*
+services/rider/package-lock.json

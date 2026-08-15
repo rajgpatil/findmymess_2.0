@@ -6,6 +6,7 @@ import Cart from "../models/Cart.js";
 import { IMenuItem } from "../models/MenuItems.js";
 import Order from "../models/Order.js";
 import Restaurant, { IRestaurant } from "../models/Restaurant.js";
+import { publishEvent } from "../config/order.publisher.js";
 
 export const createOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
   const user = req.user;
@@ -293,20 +294,20 @@ export const updateOrderStatus = TryCatch(
     );
 
     // now assign riders
-    // if (status === "ready_for_rider") {
-    //   console.log(
-    //     "Publishing Order ready for rider event for order",
-    //     order._id,
-    //   );
+    if (status === "ready_for_rider") {
+      console.log(
+        "Publishing Order ready for rider event for order",
+        order._id,
+      );
 
-    //   await publishEvent("ORDER_READY_FOR_RIDER", {
-    //     orderId: order._id.toString(),
-    //     restaurantId: restaurant._id.toString(),
-    //     location: restaurant.autoLocation,
-    //   });
+      await publishEvent("ORDER_READY_FOR_RIDER", {
+        orderId: order._id.toString(),
+        restaurantId: restaurant._id.toString(),
+        location: restaurant.autoLocation,
+      });
 
-    //   console.log("Event Published successfully");
-    // }
+      console.log("Event Published successfully");
+    }
 
     res.json({
       message: "order status updated successfully",
