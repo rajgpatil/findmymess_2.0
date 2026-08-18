@@ -1,15 +1,15 @@
 import express from "express";
 import { isAuth, isSeller } from "../middlewares/isAuth.js";
 import {
-  //   assignRiderToOrder,
   createOrder,
   fetchOrderForPayment,
   fetchRestaurantOrders,
   updateOrderStatus,
   fetchSingleOrder,
-  //   getCurrentOrderForRider,
   getMyOrders,
-  //   updateOrderStatusRider,
+  assignRiderToOrder,
+  getCurrentOrderForRider,
+  updateOrderStatusRider,
 } from "../controllers/order.js";
 
 const router = express.Router();
@@ -25,8 +25,8 @@ router.get(
   fetchRestaurantOrders,
 );
 router.put("/:orderId", isAuth, isSeller, updateOrderStatus);
-// router.put("/assign/rider", assignRiderToOrder);
-// router.get("/current/rider", getCurrentOrderForRider);
-// router.put("/update/status/rider", updateOrderStatusRider);
+router.put("/assign/rider", assignRiderToOrder);
+router.get("/current/rider", getCurrentOrderForRider);
+router.put("/update/status/rider", updateOrderStatusRider);
 
 export default router;

@@ -7,8 +7,8 @@ import toast from "react-hot-toast";
 import { BiUpload } from "react-icons/bi";
 import type { IOrder } from "../types";
 import audio from "../assets/faaah.mp3";
-// import RiderOrderRequest from "../components/RiderOrderRequest";
-// import RiderCurrentOrder from "../components/RiderCurrentOrder";
+import RiderOrderRequest from "../components/RiderOrderRequest";
+import RiderCurrentOrder from "../components/RiderCurrentOrder";
 // import RiderOrderMap from "../components/RiderOrderMap";
 
 interface IRider {
@@ -347,7 +347,7 @@ const RiderDashboard = () => {
         </div>
       )}
 
-      {/* {profile.isAvailble && incomingOrders.length > 0 && (
+      {profile.isAvailble && incomingOrders.length > 0 && (
         <div className="mx-auto max-w-md px-4 space-y-3">
           <h3 className=" font-semibold text-gray-700">Incoming Orders</h3>
           {incomingOrders.map((id) => (
@@ -361,17 +361,17 @@ const RiderDashboard = () => {
             />
           ))}
         </div>
-      )} */}
+      )}
 
-      {/* {currentOrder && (
+      {currentOrder && (
         <div className="mx-auto max-w-md px-4 space-y-4">
           <RiderCurrentOrder
             order={currentOrder}
             onStatusUpdate={fetchCurrentOrder}
           />
-          <RiderOrderMap order={currentOrder} />
+          {/* <RiderOrderMap order={currentOrder} /> */}
         </div>
-      )} */}
+      )}
     </div>
   );
 };
