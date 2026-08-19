@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { IOrder } from "../types";
 import axios from "axios";
 import { restaurantService } from "../main";
-// import UserOrderMap from "../components/UserOrderMap";
+import UserOrderMap from "../components/UserOrderMap";
 
 const OrderPage = () => {
   const { id } = useParams();
@@ -140,7 +140,7 @@ const OrderPage = () => {
         </p>
       </div>
 
-      {/* {(order.status === "rider_assigned" || order.status === "picked_up") &&
+      {(order.status === "rider_assigned" || order.status === "picked_up") &&
         (riderLocation ? (
           <UserOrderMap
             riderLocation={riderLocation}
@@ -151,7 +151,7 @@ const OrderPage = () => {
           />
         ) : (
           <p>Waiting for rider location</p>
-        ))} */}
+        ))}
     </div>
   );
 };
