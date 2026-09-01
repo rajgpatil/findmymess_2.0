@@ -9,3 +9,6 @@ services/realtime/dist/*
 services/rider/node_modules/*
 services/rider/dist/*
 services/rider/package-lock.json
+services/admin/node_modules/*
+services/admin/dist/*
+services/admin/package-lock.json
