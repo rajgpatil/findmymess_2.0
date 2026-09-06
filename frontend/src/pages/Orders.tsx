@@ -1,9 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import type { IOrder } from "../types";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
+import { useAppData } from "../context/AppContext";
 import axios from "axios";
 import { restaurantService } from "../main";
+import {
+  CustomerShell,
+  MobileTabBar,
+  type NavItem,
+} from "@/components/fmm/app-shell";
+import { StatusBadge } from "@/components/fmm/status-badge";
+import { Money, SectionHeading, EmptyState } from "@/components/fmm/primitives";
+import { Button } from "@/components/ui/button";
+import { Receipt, ArrowRight, Home, Bike, User } from "lucide-react";
 
 const ACTIVE_STATUSES = [
   "placed",
@@ -19,6 +29,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { socket } = useSocket();
+  const { quauntity, user } = useAppData();
 
   const fetchOrders = async () => {
     try {
@@ -59,94 +70,157 @@ const Orders = () => {
     };
   }, [socket]);
 
-  if (loading) {
-    return <p className="text-center text-gray-500">Loading orders...</p>;
-  }
+  const userInitials = useMemo(() => {
+    if (!user?.name) return "RP";
+    const parts = user.name.trim().split(" ");
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return user.name.slice(0, 2).toUpperCase();
+  }, [user]);
 
-  if (orders.length === 0) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-gray-500">No orders yet</p>
-      </div>
-    );
-  }
+  const customerNav: NavItem[] = [
+    { label: "Home", to: "/", icon: Home },
+    { label: "Orders", to: "/orders", icon: Receipt },
+    { label: "Track", to: "/orders", icon: Bike },
+    { label: "Account", to: "/account", icon: User },
+  ];
 
   const activeOrders = orders.filter((o) => ACTIVE_STATUSES.includes(o.status));
   const completedOrders = orders.filter(
     (o) => !ACTIVE_STATUSES.includes(o.status),
   );
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 space-y-6">
-      <h1 className="text-2xl font-bold">My Orders</h1>
+    <>
+      <CustomerShell cartCount={quauntity} userInitials={userInitials}>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+          My Orders
+        </h1>
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Active Orders</h2>
-
-        {activeOrders.length === 0 ? (
-          <p>No active orders</p>
-        ) : (
-          activeOrders.map((order) => (
-            <OrderRow
-              key={order._id}
-              order={order}
-              onClick={() => navigate(`/order/${order._id}`)}
+        {loading ? (
+          <p className="text-sm text-muted-foreground mt-6">
+            Loading orders...
+          </p>
+        ) : orders.length === 0 ? (
+          <div className="py-12">
+            <EmptyState
+              icon={Receipt}
+              title="No orders yet"
+              description="You haven't placed any orders with FindMyMess yet. Order from your favorite mess!"
+              action={
+                <Button onClick={() => navigate("/")} className="shadow-raised">
+                  Browse Messes
+                </Button>
+              }
             />
-          ))
-        )}
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Completed Orders</h2>
-
-        {completedOrders.length === 0 ? (
-          <p>No Completed orders</p>
+          </div>
         ) : (
-          completedOrders.map((order) => (
-            <OrderRow
-              key={order._id}
-              order={order}
-              onClick={() => navigate(`/order/${order._id}`)}
-            />
-          ))
+          <div className="mt-6 space-y-8">
+            {/* Active Orders Section */}
+            <section className="space-y-3">
+              <SectionHeading
+                title={`Active Orders (${activeOrders.length})`}
+                subtitle="Live updates on preparing and en route deliveries"
+              />
+
+              {activeOrders.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No active orders right now.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {activeOrders.map((order) => (
+                    <OrderCardRow
+                      key={order._id}
+                      order={order}
+                      isActive={true}
+                      onClick={() => navigate(`/order/${order._id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Completed Orders Section */}
+            <section className="space-y-3">
+              <SectionHeading
+                title={`Past Orders (${completedOrders.length})`}
+                subtitle="Delivered and cancelled order history"
+              />
+
+              {completedOrders.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No completed orders yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {completedOrders.map((order) => (
+                    <OrderCardRow
+                      key={order._id}
+                      order={order}
+                      isActive={false}
+                      onClick={() => navigate(`/order/${order._id}`)}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
         )}
-      </section>
-    </div>
+      </CustomerShell>
+
+      <MobileTabBar items={customerNav} />
+    </>
   );
 };
 
 export default Orders;
 
-// component Order row
-const OrderRow = ({
+function OrderCardRow({
   order,
+  isActive,
   onClick,
 }: {
   order: IOrder;
+  isActive: boolean;
   onClick: () => void;
-}) => {
+}) {
   return (
-    <div
-      className="cursor-pointer rounded-xl bg-white p-4 shadow-sm hover:bg-gray-50"
+    <article
       onClick={onClick}
+      className={`fmm-surface grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 p-4 sm:p-5 cursor-pointer transition-all duration-200 hover:shadow-raised ${
+        isActive ? "border-primary/40 shadow-sm" : ""
+      }`}
     >
-      <div className="flex justify-between items-center">
-        <p className="text-sm font-medium">Order #{order._id.slice(-6)}</p>
-        <span className="text-xs capitalize text-gray-500">{order.status}</span>
+      <div className="min-w-0 space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="font-display text-sm sm:text-base font-bold text-foreground">
+            Order #{order._id.slice(-6)}
+          </p>
+          <StatusBadge status={order.status} />
+        </div>
+
+        <p className="truncate text-xs sm:text-sm font-semibold text-foreground">
+          {order.restaurantName || "Mess Order"}
+        </p>
+
+        <p className="truncate text-xs text-muted-foreground">
+          {order.items.map((it) => `${it.name} × ${it.quauntity}`).join(", ")}
+        </p>
       </div>
 
-      <div className="mt-2 text-sm text-gray-600">
-        {order.items.map((item, i) => (
-          <span key={i}>
-            {item.name} x {item.quauntity}
-            {i < order.items.length - 1 && ", "}
-          </span>
-        ))}
+      <div className="text-right space-y-1">
+        <p className="font-display text-base font-bold text-foreground tabular-nums">
+          <Money amount={order.totalAmount} />
+        </p>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-auto p-0 text-xs font-bold text-primary hover:text-primary/80 gap-1"
+        >
+          {isActive ? "Track live" : "View details"}{" "}
+          <ArrowRight className="size-3" />
+        </Button>
       </div>
-
-      <div className="mt-2 flex justify-between text-sm font-medium">
-        <span>Total</span>
-        <span>₹{order.totalAmount}</span>
-      </div>
-    </div>
+    </article>
   );
-};
+}

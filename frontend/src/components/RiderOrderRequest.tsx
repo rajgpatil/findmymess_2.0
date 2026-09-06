@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { riderService } from "../main";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { Pill } from "./fmm/status-badge";
+import { Button } from "./ui/button";
+import { Clock, Check, X, Bike } from "lucide-react";
 
 interface Props {
   orderId: string;
@@ -10,7 +13,7 @@ interface Props {
 
 const RiderOrderRequest = ({ orderId, onAccepted }: Props) => {
   const [accepting, setAccepting] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(10);
+  const [secondsLeft, setSecondsLeft] = useState(15);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,6 +32,7 @@ const RiderOrderRequest = ({ orderId, onAccepted }: Props) => {
 
   const acceptOrder = async () => {
     try {
+      setAccepting(true);
       await axios.post(
         `${riderService}/api/rider/accept/${orderId}`,
         {},
@@ -39,36 +43,59 @@ const RiderOrderRequest = ({ orderId, onAccepted }: Props) => {
         },
       );
 
-      toast.success("Order Accepted");
+      toast.success("Order accepted! Proceed to pickup.");
       onAccepted();
     } catch (error: any) {
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message || "Failed to accept order");
       onAccepted();
     } finally {
       setAccepting(false);
     }
   };
+
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm border border-green-300 space-y-3">
-      <p className="text-center text-xs font-semibold text-red-600">
-        Accept within {secondsLeft}
-      </p>
+    <div className="rounded-xl border-2 border-success/50 bg-surface p-4 shadow-card transition-all animate-in fade-in slide-in-from-top-2">
+      <div className="flex items-center justify-between">
+        <Pill tone="success">New Delivery Request</Pill>
+        <span className="flex items-center gap-1 text-xs font-bold text-destructive tabular-nums">
+          <Clock className="size-3.5" />
+          00:{secondsLeft < 10 ? `0${secondsLeft}` : secondsLeft}
+        </span>
+      </div>
 
-      <p className="text-center text-xs font-semibold text-green-600">
-        New Delivery Request
-      </p>
+      <div className="mt-3 flex items-center gap-3">
+        <span className="grid size-10 place-items-center rounded-full bg-success/15 text-success">
+          <Bike className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-mono text-sm font-bold text-foreground">
+            Order #{orderId.slice(-6).toUpperCase()}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            New trip ready for dispatch
+          </p>
+        </div>
+      </div>
 
-      <p className="text-xs text-gray-600">
-        Order ID: <b>{orderId.slice(-6)}</b>
-      </p>
-
-      <button
-        disabled={accepting}
-        onClick={acceptOrder}
-        className="w-full rounded-lg bg-green-600 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-      >
-        {accepting ? "Accepting..." : "Accept order"}
-      </button>
+      <div className="mt-4 flex items-center justify-end gap-2 border-t border-border pt-3">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={onAccepted}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <X className="size-4" /> Skip
+        </Button>
+        <Button
+          size="sm"
+          disabled={accepting}
+          onClick={acceptOrder}
+          className="bg-success text-success-foreground hover:bg-success/90 font-bold px-4"
+        >
+          <Check className="size-4" />
+          {accepting ? "Accepting..." : "Accept Order"}
+        </Button>
+      </div>
     </div>
   );
 };

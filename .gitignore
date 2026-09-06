@@ -12,3 +12,5 @@ services/rider/package-lock.json
 services/admin/node_modules/*
 services/admin/dist/*
 services/admin/package-lock.json
+Theme/*
+Implementation.md

@@ -4,12 +4,34 @@ import { useSocket } from "../context/SocketContext";
 import axios from "axios";
 import { riderService } from "../main";
 import toast from "react-hot-toast";
-import { BiUpload } from "react-icons/bi";
 import type { IOrder } from "../types";
 import audio from "../assets/faaah.mp3";
 import RiderOrderRequest from "../components/RiderOrderRequest";
 import RiderCurrentOrder from "../components/RiderCurrentOrder";
 import RiderOrderMap from "../components/RiderOrderMap";
+import {
+  RiderShell,
+  MobileTabBar,
+  type NavItem,
+} from "../components/fmm/app-shell";
+import { Pill } from "../components/fmm/status-badge";
+import { Avatar, AvatarFallback } from "../components/ui/avatar";
+import { Switch } from "../components/ui/switch";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
+import {
+  Bike,
+  IndianRupee,
+  Package,
+  Star,
+  Bell,
+  Upload,
+  Home,
+  Wallet,
+  User,
+} from "lucide-react";
 
 interface IRider {
   _id: string;
@@ -21,13 +43,39 @@ interface IRider {
   isAvailble: boolean;
 }
 
+const riderNavItems: NavItem[] = [
+  { label: "Home", to: "/rider", icon: Home },
+  { label: "Delivery", to: "#delivery", icon: Bike },
+  { label: "Earnings", to: "#earnings", icon: Wallet },
+  { label: "Profile", to: "/account", icon: User },
+];
+
+function MiniStat({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Bike;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="fmm-surface p-3 text-center transition-all hover:shadow-xs">
+      <Icon className="mx-auto size-4 text-primary" />
+      <p className="mt-1 font-display text-lg font-bold tabular-nums text-foreground">
+        {value}
+      </p>
+      <p className="text-[11px] text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
 const RiderDashboard = () => {
   const { user } = useAppData();
   const { socket } = useSocket();
 
   const [profile, setProfile] = useState<IRider | null>(null);
   const [loading, setLoading] = useState(true);
-
   const [toggling, setToggling] = useState(false);
 
   const [incomingOrders, setIncomingOrders] = useState<string[]>([]);
@@ -48,7 +96,7 @@ const RiderDashboard = () => {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setAudioUnlocked(true);
-      toast.success("Sound Enabled");
+      toast.success("Sound notifications enabled");
     } catch (error) {
       toast.error("Tap again to enable sound");
     }
@@ -69,7 +117,7 @@ const RiderDashboard = () => {
 
       setTimeout(() => {
         setIncomingOrders((prev) => prev.filter((id) => id !== orderId));
-      }, 10000);
+      }, 15000);
     };
 
     socket.on("order:available", onOrderAvailable);
@@ -124,40 +172,49 @@ const RiderDashboard = () => {
 
   const toggleAvailiblity = async () => {
     if (!navigator.geolocation) {
-      toast.error("Location Access Required");
+      toast.error("Location access is required to go online");
       return;
     }
 
     setToggling(true);
 
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      try {
-        await axios.patch(
-          `${riderService}/api/rider/toggle`,
-          {
-            isAvailble: !profile?.isAvailble,
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          await axios.patch(
+            `${riderService}/api/rider/toggle`,
+            {
+              isAvailble: !profile?.isAvailble,
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
             },
-          },
-        );
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            },
+          );
 
-        toast.success(
-          profile?.isAvailble ? "You are offline" : "You are online",
-        );
-        fetchProfile();
-      } catch (error: any) {
-        toast.error(error.response.data.message);
-      } finally {
+          toast.success(
+            profile?.isAvailble ? "You are now offline" : "You are now online!",
+          );
+          fetchProfile();
+        } catch (error: any) {
+          toast.error(
+            error?.response?.data?.message || "Failed to update availability",
+          );
+        } finally {
+          setToggling(false);
+        }
+      },
+      () => {
+        toast.error("Please enable GPS location to go online");
         setToggling(false);
-      }
-    });
+      },
+    );
   };
 
+  // Onboarding form states
   const [phoneNumber, setPhoneNumber] = useState("");
   const [aadharNumber, setaadharNumber] = useState("");
   const [drivingLicenseNumber, setDrivingLicenseNumber] = useState("");
@@ -166,213 +223,323 @@ const RiderDashboard = () => {
 
   const handleSubmit = async () => {
     if (!navigator.geolocation) {
-      toast.error("Location Access Required");
+      toast.error("Location access is required");
       return;
     }
 
     setSubmitting(true);
 
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const formData = new FormData();
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const formData = new FormData();
+        formData.append("phoneNumber", phoneNumber);
+        formData.append("aadharNumber", aadharNumber);
+        formData.append("drivingLicenseNumber", drivingLicenseNumber);
+        formData.append("latitude", pos.coords.latitude.toString());
+        formData.append("longitude", pos.coords.longitude.toString());
 
-      formData.append("phoneNumber", phoneNumber);
-      formData.append("aadharNumber", aadharNumber);
-      formData.append("drivingLicenseNumber", drivingLicenseNumber);
-      formData.append("latitude", pos.coords.latitude.toString());
-      formData.append("longitude", pos.coords.longitude.toString());
+        if (image) {
+          formData.append("file", image);
+        }
 
-      if (image) {
-        formData.append("file", image);
-      }
-
-      try {
-        const { data } = await axios.post(
-          `${riderService}/api/rider/new`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+        try {
+          const { data } = await axios.post(
+            `${riderService}/api/rider/new`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
             },
-          },
-        );
+          );
 
-        toast.success(data.message);
-        fetchProfile();
-      } catch (error: any) {
-        toast.error(error.response.data.message);
-      } finally {
+          toast.success(data.message);
+          fetchProfile();
+        } catch (error: any) {
+          toast.error(
+            error?.response?.data?.message || "Failed to register profile",
+          );
+        } finally {
+          setSubmitting(false);
+        }
+      },
+      () => {
+        toast.error("Location access denied");
         setSubmitting(false);
-      }
-    });
+      },
+    );
   };
 
   if (user?.role !== "rider") {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-gray-500">
-        You are not registered as a rider
+      <div className="flex min-h-[60vh] flex-col items-center justify-center p-6 text-center">
+        <Bike className="size-12 text-muted-foreground/40 mb-3" />
+        <h2 className="text-lg font-bold">Rider Account Required</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          You are currently signed in as a {user?.role || "customer"}.
+        </p>
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-gray-500">
-        Loading rider details...
+      <div className="flex min-h-screen items-center justify-center bg-surface-muted">
+        <div className="flex flex-col items-center gap-3">
+          <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm font-medium text-muted-foreground">
+            Loading rider partner console...
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (!profile)
+  // Registration / Onboarding View
+  if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-50 px-4 py-6">
-        <div className="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-sm space-y-5">
-          <h1 className="text-xl font-semibold">Add Your Profile</h1>
-          <input
-            type="number"
-            placeholder="Aadhar number"
-            value={aadharNumber}
-            onChange={(e) => setaadharNumber(e.target.value)}
-            className="w-full rounded-lg border px-4 py-2 text-sm outline-none"
-          />
-          <input
-            type="number"
-            placeholder="Contact Number"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full rounded-lg border px-4 py-2 text-sm outline-none"
-          />
-
-          <input
-            type="text"
-            placeholder="driving Licence"
-            value={drivingLicenseNumber}
-            onChange={(e) => setDrivingLicenseNumber(e.target.value)}
-            className="w-full rounded-lg border px-4 py-2 text-sm outline-none"
-          />
-
-          <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 text-sm text-gray-600 hover:bg-gray-50">
-            <BiUpload className="h-5 w-5 text-red-500" />
-            {image ? image.name : "Upload your image"}
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
-            />
-          </label>
-
-          <button
-            className="w-full rounded-lg py-3 text-sm font-semibold text-white bg-[#e23744]"
-            disabled={submitting}
-            onClick={handleSubmit}
-          >
-            {submitting ? "Submitting..." : "Add Profile"}
-          </button>
-        </div>
-      </div>
-    );
-  return (
-    <div className="space-y-4">
-      <div className="mx-auto max-w-md px-4 py-4">
-        <div className="rounded-xl bg-white p-4 shadow space-y-3">
-          <img
-            src={profile.picture}
-            className="mx-auto h-24 w-24 rounded-full object-cover"
-            alt=""
-          />
-          <p className="text-center font-semibold">{user?.name}</p>
-          <p className="text-center text-sm text-gray-500">
-            {profile.phoneNumber}
-          </p>
-
-          <div className="flex justify-center gap-2">
-            <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-600">
-              {profile.isVerified ? "Verified" : "Pending"}
-            </span>
-
-            <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-600">
-              {profile.isAvailble ? "Online" : "Offline"}
-            </span>
-          </div>
-
-          <div>
-            <p className="text-blue-400">
-              Please be within a 500 m radius of any restaurant (which we call a
-              hotspot) before going online as a rider to receive orders.
+      <div className="min-h-screen bg-surface-muted px-4 py-8">
+        <div className="mx-auto max-w-lg fmm-surface p-6 space-y-6">
+          <div className="text-center space-y-1">
+            <h1 className="font-display text-2xl font-bold tracking-tight">
+              Rider Partner Onboarding
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Register your vehicle details and documents to start earning
             </p>
           </div>
 
-          {profile.isVerified && !currentOrder && (
-            <button
-              onClick={toggleAvailiblity}
-              disabled={toggling}
-              className={`w-full py-2 rounded-lg text-white font-semibold ${
-                toggling
-                  ? "bg-gray-400"
-                  : profile.isAvailble
-                    ? "bg-gray-600"
-                    : "bg-[#e23744]"
-              }`}
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Aadhar Card Number</Label>
+              <Input
+                type="text"
+                placeholder="12-digit UIDAI number"
+                value={aadharNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setaadharNumber(e.target.value)
+                }
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Contact Phone Number</Label>
+              <Input
+                type="tel"
+                placeholder="10-digit mobile number"
+                value={phoneNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPhoneNumber(e.target.value)
+                }
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Driving Licence Number</Label>
+              <Input
+                type="text"
+                placeholder="DL number (e.g. MH12 20210001234)"
+                value={drivingLicenseNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setDrivingLicenseNumber(e.target.value)
+                }
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Profile / Vehicle Picture</Label>
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-4 text-sm text-muted-foreground hover:border-primary/50 hover:bg-surface-muted transition">
+                <Upload className="size-4 text-primary" />
+                <span>{image ? image.name : "Upload photo or selfie"}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setImage(e.target.files?.[0] || null)
+                  }
+                />
+              </label>
+            </div>
+
+            <Button
+              className="w-full mt-2"
+              size="lg"
+              disabled={submitting}
+              onClick={handleSubmit}
             >
-              {toggling
-                ? "Updating..."
-                : profile.isAvailble
-                  ? "Go Offline"
-                  : "Go Online"}
-            </button>
-          )}
+              {submitting ? "Submitting Application..." : "Submit Registration"}
+            </Button>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {!audioUnlocked && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+  const initials = (user?.name || "Rider")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  return (
+    <>
+      <RiderShell
+        title={`Good day, ${user?.name?.split(" ")[0] || "Partner"}`}
+        right={
+          profile.isVerified ? (
+            <label className="flex cursor-pointer items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 shadow-xs transition hover:border-primary/40">
+              <Switch
+                checked={profile.isAvailble}
+                disabled={toggling}
+                onCheckedChange={toggleAvailiblity}
+              />
+              <span
+                className={`text-xs font-bold ${
+                  profile.isAvailble ? "text-success" : "text-muted-foreground"
+                }`}
+              >
+                {toggling
+                  ? "Updating..."
+                  : profile.isAvailble
+                    ? "Online"
+                    : "Offline"}
+              </span>
+            </label>
+          ) : (
+            <Pill tone="warning">Pending Verification</Pill>
+          )
+        }
+      >
+        {/* Profile Card matching Theme */}
+        <div className="fmm-surface p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">🔔</span>
-            <div>
-              <p className="font-medium text-blue-900">
-                Enable Sound Notification
+            <Avatar className="size-12 ring-2 ring-primary/10">
+              {profile.picture ? (
+                <img
+                  src={profile.picture}
+                  alt={user?.name || "Rider"}
+                  className="size-full object-cover"
+                />
+              ) : (
+                <AvatarFallback className="bg-primary/10 font-bold text-primary">
+                  {initials}
+                </AvatarFallback>
+              )}
+            </Avatar>
+
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-foreground">
+                {user?.name}
               </p>
-              <p className="text-sm text-blue-700">
-                Get Notified when new orders arrive
+              <p className="text-xs text-muted-foreground">
+                DL: {profile.drivingLicenseNumber}
               </p>
+            </div>
+
+            <div className="flex flex-col items-end gap-1">
+              <Pill tone={profile.isVerified ? "success" : "warning"}>
+                {profile.isVerified ? "Verified Rider" : "Pending Review"}
+              </Pill>
             </div>
           </div>
 
-          <button
-            onClick={unlockAudio}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition"
-          >
-            Enable sound
-          </button>
+          <div className="rounded-lg bg-info-soft p-3 text-xs text-info leading-relaxed">
+            Stay within 500 m of a partner mess hotspot to keep receiving
+            incoming delivery requests.
+          </div>
         </div>
-      )}
 
-      {profile.isAvailble && incomingOrders.length > 0 && (
-        <div className="mx-auto max-w-md px-4 space-y-3">
-          <h3 className=" font-semibold text-gray-700">Incoming Orders</h3>
-          {incomingOrders.map((id) => (
-            <RiderOrderRequest
-              key={id}
-              orderId={id}
-              onAccepted={() => {
-                fetchProfile();
-                fetchCurrentOrder();
-              }}
+        {/* 3 Mini KPI Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          <MiniStat icon={Package} label="Today's Trips" value="12" />
+          <MiniStat icon={IndianRupee} label="Earnings" value="₹840" />
+          <MiniStat icon={Star} label="Rating" value="4.8" />
+        </div>
+
+        {/* Audio Alert notification prompt */}
+        {!audioUnlocked && (
+          <Alert className="border-info/30 bg-info-soft flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Bell className="size-4 text-info shrink-0" />
+              <div className="min-w-0">
+                <AlertTitle className="text-info text-xs font-bold">
+                  Trip Sound Alerts
+                </AlertTitle>
+                <AlertDescription className="text-info/80 text-[11px]">
+                  Audible beep on new orders
+                </AlertDescription>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-surface text-xs"
+              onClick={unlockAudio}
+            >
+              Enable
+            </Button>
+          </Alert>
+        )}
+
+        {/* Incoming Order Broadcast Requests */}
+        {profile.isAvailble && incomingOrders.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="fmm-section-title">Incoming Trip Requests</h2>
+              <span className="text-xs font-bold text-success animate-pulse">
+                Live
+              </span>
+            </div>
+            <div className="space-y-3">
+              {incomingOrders.map((id) => (
+                <RiderOrderRequest
+                  key={id}
+                  orderId={id}
+                  onAccepted={() => {
+                    fetchProfile();
+                    fetchCurrentOrder();
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Active Order / Current Delivery */}
+        {currentOrder ? (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="fmm-section-title">Active Delivery</h2>
+            </div>
+            <RiderCurrentOrder
+              order={currentOrder}
+              onStatusUpdate={fetchCurrentOrder}
             />
-          ))}
-        </div>
-      )}
+            <RiderOrderMap order={currentOrder} />
+          </section>
+        ) : (
+          profile.isAvailble &&
+          incomingOrders.length === 0 && (
+            <div className="fmm-surface p-6 text-center space-y-2">
+              <div className="mx-auto grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+                <Bike className="size-6 animate-pulse" />
+              </div>
+              <p className="font-bold text-sm text-foreground">
+                Waiting for nearby delivery requests
+              </p>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                You are online! As soon as a mess partner accepts an order, it
+                will appear here.
+              </p>
+            </div>
+          )
+        )}
+      </RiderShell>
 
-      {currentOrder && (
-        <div className="mx-auto max-w-md px-4 space-y-4">
-          <RiderCurrentOrder
-            order={currentOrder}
-            onStatusUpdate={fetchCurrentOrder}
-          />
-          <RiderOrderMap order={currentOrder} />
-        </div>
-      )}
-    </div>
+      <MobileTabBar items={riderNavItems} activeTo="/rider" />
+    </>
   );
 };
 

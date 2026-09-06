@@ -3,13 +3,17 @@ import { useAppData } from "../context/AppContext";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { restaurantService } from "../main";
-import { BiMapPin, BiUpload } from "react-icons/bi";
+import { Store, Upload, MapPin, Phone } from "lucide-react";
+import { FmmLogo } from "@/components/fmm/logo";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
-interface props {
+interface Props {
   fetchMyRestaurant: () => Promise<void>;
 }
 
-const AddRestaurant = ({ fetchMyRestaurant }: props) => {
+const AddRestaurant = ({ fetchMyRestaurant }: Props) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,12 +24,13 @@ const AddRestaurant = ({ fetchMyRestaurant }: props) => {
 
   const handleSubmit = async () => {
     if (!name || !image || !location) {
-      alert("All field are required");
+      toast.error(
+        "Please fill in restaurant name, contact number, and upload an image",
+      );
       return;
     }
 
     const formData = new FormData();
-
     formData.append("name", name);
     formData.append("description", description);
     formData.append("latitude", String(location.latitude));
@@ -42,66 +47,118 @@ const AddRestaurant = ({ fetchMyRestaurant }: props) => {
         },
       });
 
-      toast.success("Restaurant Added successfully");
+      toast.success(
+        "Restaurant registered successfully! Awaiting verification.",
+      );
       fetchMyRestaurant();
     } catch (error: any) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Failed to add restaurant");
     } finally {
       setSubmitting(false);
     }
   };
+
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-6">
-      <div className="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-sm space-y-5">
-        <h1 className="text-xl font-semibold">Add Your Restaurant</h1>
-        <input
-          type="text"
-          placeholder="Restaurant name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-lg border px-4 py-2 text-sm outline-none"
-        />
-        <input
-          type="number"
-          placeholder="Contact Number"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full rounded-lg border px-4 py-2 text-sm outline-none"
-        />
-        <textarea
-          placeholder="Restaurant Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full rounded-lg border px-4 py-2 text-sm outline-none"
-        />
-
-        <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 text-sm text-gray-600 hover:bg-gray-50">
-          <BiUpload className="h-5 w-5 text-red-500" />
-          {image ? image.name : "Upload restaurant image"}
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={(e) => setImage(e.target.files?.[0] || null)}
-          />
-        </label>
-
-        <div className="flex items-start gap-3 rounded-lg boder p-4">
-          <BiMapPin className="mt-0.5 h-5 w-5 text-red-500" />
-          <div className="text-sm">
-            {loadingLocation
-              ? "Fetching you location..."
-              : location?.formattedAddress || "Location not available"}
+    <div className="min-h-screen bg-background px-4 py-12 flex items-center justify-center">
+      <div className="w-full max-w-lg fmm-surface p-6 sm:p-8 space-y-6 shadow-raised">
+        <div className="text-center space-y-2">
+          <FmmLogo size="lg" />
+          <div className="pt-2">
+            <span className="inline-grid size-12 place-items-center rounded-xl bg-primary-soft text-primary mx-auto mb-2">
+              <Store className="size-6" />
+            </span>
+            <h1 className="font-display text-2xl font-bold text-foreground">
+              Register Your Mess / Restaurant
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Partner with FindMyMess to reach students and local foodies
+              nearby.
+            </p>
           </div>
         </div>
 
-        <button
-          className="w-full rounded-lg py-3 text-sm font-semibold text-white bg-[#e23744]"
-          disabled={submitting}
-          onClick={handleSubmit}
-        >
-          {submitting ? "Submitting..." : "Add Restaurant"}
-        </button>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">
+              Mess / Restaurant Name
+            </label>
+            <Input
+              placeholder="e.g. Patil Deluxe Mess & Kitchen"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">
+              Contact Phone Number
+            </label>
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3">
+              <Phone className="size-4 text-muted-foreground" />
+              <Input
+                type="number"
+                placeholder="10-digit mobile number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="border-0 px-0 shadow-none focus-visible:ring-0"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">
+              Cuisine Description
+            </label>
+            <Textarea
+              placeholder="Specializing in Maharashtrian Thalis, Puran Poli, Chicken Biryani..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">
+              Cover Photo
+            </label>
+            <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border p-5 text-xs text-muted-foreground hover:border-primary hover:bg-primary-soft/10 transition-colors cursor-pointer">
+              <Upload className="size-6 text-primary" />
+              <span className="font-medium">
+                {image ? image.name : "Upload Mess Kitchen / Dining Image"}
+              </span>
+              <span className="text-[11px] text-muted-foreground/70">
+                PNG, JPG or WEBP up to 5MB
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => setImage(e.target.files?.[0] || null)}
+              />
+            </label>
+          </div>
+
+          <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+              <MapPin className="size-4 text-primary" />
+              <span>Location Detected</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed pl-6">
+              {loadingLocation
+                ? "Detecting GPS coordinates..."
+                : location?.formattedAddress || "Location permission required"}
+            </p>
+          </div>
+
+          <Button
+            disabled={submitting}
+            onClick={handleSubmit}
+            className="w-full font-bold shadow-raised text-base"
+            size="lg"
+          >
+            {submitting ? "Registering Mess..." : "Submit for Verification"}
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 import axios from "axios";
 import { realtimeService } from "../main";
+import { Navigation, Compass } from "lucide-react";
 
 declare module "leaflet" {
   namespace Routing {
@@ -15,14 +16,16 @@ declare module "leaflet" {
 }
 
 const riderIcon = new L.DivIcon({
-  html: "🛵",
-  iconSize: [30, 30],
+  html: `<div style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:#e23744;color:white;border-radius:9999px;box-shadow:0 4px 12px rgba(226,55,68,0.4);border:2px solid white;font-size:18px;">🛵</div>`,
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
   className: "",
 });
 
 const deliveryIcon = new L.DivIcon({
-  html: "📦",
-  iconSize: [30, 30],
+  html: `<div style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:#16a34a;color:white;border-radius:9999px;box-shadow:0 4px 12px rgba(22,163,74,0.4);border:2px solid white;font-size:18px;">📍</div>`,
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
   className: "",
 });
 
@@ -43,7 +46,7 @@ const Routing = ({
     const control = L.Routing.control({
       waypoints: [L.latLng(from), L.latLng(to)],
       lineOptions: {
-        styles: [{ color: "#E23744", weight: 5 }],
+        styles: [{ color: "#e23744", weight: 5, opacity: 0.85 }],
       },
       addWaypoints: false,
       draggableWaypoints: false,
@@ -118,25 +121,37 @@ const RiderOrderMap = ({ order }: Props) => {
   }, [order.userId]);
 
   if (!riderLocation) return null;
+
   return (
-    <div className="rounded-xl bg-white shadow-sm p-3">
-      <MapContainer
-        center={riderLocation}
-        zoom={14}
-        className="h-87.5 w-full rounded-lg"
-      >
-        <TileLayer
-          attribution="&copy; OpenStreetMap"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Marker position={riderLocation} icon={riderIcon}>
-          <Popup>You (Rider)</Popup>
-        </Marker>
-        <Marker position={deliveryLocation} icon={deliveryIcon}>
-          <Popup>Delivery Location</Popup>
-        </Marker>
-        <Routing from={riderLocation} to={deliveryLocation} />
-      </MapContainer>
+    <div className="fmm-surface overflow-hidden">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5 bg-surface-muted/50">
+        <div className="flex items-center gap-2">
+          <Navigation className="size-4 text-primary animate-pulse" />
+          <span className="text-xs font-bold text-foreground">
+            Live Delivery Route
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
+          <Compass className="size-3.5 text-success" />
+          <span>GPS Active</span>
+        </div>
+      </div>
+
+      <div className="h-64 sm:h-72 w-full">
+        <MapContainer center={riderLocation} zoom={14} className="size-full">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Marker position={riderLocation} icon={riderIcon}>
+            <Popup>You (Rider Live Position)</Popup>
+          </Marker>
+          <Marker position={deliveryLocation} icon={deliveryIcon}>
+            <Popup>Customer Drop Location</Popup>
+          </Marker>
+          <Routing from={riderLocation} to={deliveryLocation} />
+        </MapContainer>
+      </div>
     </div>
   );
 };
