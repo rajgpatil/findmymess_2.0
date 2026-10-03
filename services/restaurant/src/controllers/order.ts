@@ -7,6 +7,7 @@ import { IMenuItem } from "../models/MenuItems.js";
 import Order from "../models/Order.js";
 import Restaurant, { IRestaurant } from "../models/Restaurant.js";
 import { publishEvent } from "../config/order.publisher.js";
+import { publishEmailNotification } from "../config/email.publisher.js";
 
 export const createOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
   const user = req.user;
@@ -128,6 +129,8 @@ export const createOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
 
   const order = await Order.create({
     userId: user._id.toString(),
+    customerEmail: user.email,
+    customerName: user.name,
     restaurantId: restaurantId.toString(),
     restaurantName: restaurant.name,
     riderId: null,
@@ -309,6 +312,45 @@ export const updateOrderStatus = TryCatch(
       console.log("Event Published successfully");
     }
 
+    // const statusMap: Record<string, { title: string; message: string }> = {
+    //   accepted: {
+    //     title: "Order Accepted by Restaurant",
+    //     message: "The restaurant has accepted your order and will start preparing it soon.",
+    //   },
+    //   preparing: {
+    //     title: "Chef is Preparing Your Food",
+    //     message: "Your meal is being prepared with fresh ingredients.",
+    //   },
+    //   ready_for_rider: {
+    //     title: "Order Ready & Waiting for Rider",
+    //     message: "Your order is freshly packed and waiting for delivery pickup.",
+    //   },
+    // };
+
+    // const statusDetails = statusMap[status];
+    // if (order.customerEmail && statusDetails) {
+    //   await publishEmailNotification({
+    //     idempotencyKey: `order_${order._id}_status_${status}`,
+    //     type: "ORDER_STATUS_UPDATE",
+    //     recipient: {
+    //       email: order.customerEmail,
+    //       name: order.customerName || "Customer",
+    //       role: "customer",
+    //     },
+    //     data: {
+    //       orderId: order._id.toString(),
+    //       customerName: order.customerName || "Customer",
+    //       restaurantName: order.restaurantName,
+    //       status,
+    //       statusTitle: statusDetails.title,
+    //       statusMessage: statusDetails.message,
+    //       deliveryAddress: order.deliveryAddress?.fromattedAddress || "",
+    //       updatedAt: new Date().toISOString(),
+    //     },
+    //     timestamp: new Date().toISOString(),
+    //   });
+    // }
+
     res.json({
       message: "order status updated successfully",
       order,
@@ -364,7 +406,7 @@ export const assignRiderToOrder = TryCatch(async (req, res) => {
     });
   }
 
-  const { orderId, riderId, riderName, riderPhone } = req.body;
+  const { orderId, riderId, riderName, riderPhone, riderEmail } = req.body;
 
   const orderAvailable = await Order.findOne({
     riderId,
@@ -391,6 +433,7 @@ export const assignRiderToOrder = TryCatch(async (req, res) => {
       riderId,
       riderName,
       riderPhone,
+      riderEmail: riderEmail || null,
       status: "rider_assigned",
     },
     { new: true },
@@ -422,6 +465,59 @@ export const assignRiderToOrder = TryCatch(async (req, res) => {
       },
     },
   );
+
+  // Email notifications for Rider and Customer
+  if (riderEmail) {
+    const restaurant = await Restaurant.findById(order.restaurantId);
+    await publishEmailNotification({
+      idempotencyKey: `order_${order._id}_rider_assigned_${riderId}`,
+      type: "RIDER_ORDER_ASSIGNED",
+      recipient: {
+        email: riderEmail,
+        name: riderName || "Rider",
+        role: "rider",
+      },
+      data: {
+        orderId: order._id.toString(),
+        riderName: riderName || "Rider",
+        restaurantName: order.restaurantName,
+        restaurantAddress: restaurant?.autoLocation?.formattedAddress || "",
+        restaurantPhone: restaurant?.phone ? String(restaurant.phone) : "",
+        deliveryAddress: order.deliveryAddress?.fromattedAddress || "",
+        customerPhone: order.deliveryAddress?.mobile
+          ? String(order.deliveryAddress.mobile)
+          : "",
+        riderAmount: order.riderAmount,
+        distance: order.distance,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  // if (orderUpdated?.customerEmail) {
+  //   await publishEmailNotification({
+  //     idempotencyKey: `order_${order._id}_status_rider_assigned`,
+  //     type: "ORDER_STATUS_UPDATE",
+  //     recipient: {
+  //       email: orderUpdated.customerEmail,
+  //       name: orderUpdated.customerName || "Customer",
+  //       role: "customer",
+  //     },
+  //     data: {
+  //       orderId: order._id.toString(),
+  //       customerName: orderUpdated.customerName || "Customer",
+  //       restaurantName: orderUpdated.restaurantName,
+  //       status: "rider_assigned",
+  //       statusTitle: "Rider Assigned",
+  //       statusMessage: `${riderName || "A rider"} has been assigned to deliver your order.`,
+  //       deliveryAddress: orderUpdated.deliveryAddress?.fromattedAddress || "",
+  //       riderName: riderName || undefined,
+  //       riderPhone: riderPhone ? String(riderPhone) : undefined,
+  //       updatedAt: new Date().toISOString(),
+  //     },
+  //     timestamp: new Date().toISOString(),
+  //   });
+  // }
 
   res.json({
     message: "Rider Assigned Successfully",
@@ -509,6 +605,32 @@ export const updateOrderStatusRider = TryCatch(async (req, res) => {
       },
     );
 
+    if (order.customerEmail) {
+      await publishEmailNotification({
+        idempotencyKey: `order_${order._id}_status_picked_up`,
+        type: "ORDER_STATUS_UPDATE",
+        recipient: {
+          email: order.customerEmail,
+          name: order.customerName || "Customer",
+          role: "customer",
+        },
+        data: {
+          orderId: order._id.toString(),
+          customerName: order.customerName || "Customer",
+          restaurantName: order.restaurantName,
+          status: "picked_up",
+          statusTitle: "Out for Delivery",
+          statusMessage:
+            "Your order has been picked up and is on its way to you!",
+          deliveryAddress: order.deliveryAddress?.fromattedAddress || "",
+          riderName: order.riderName || undefined,
+          riderPhone: order.riderPhone ? String(order.riderPhone) : undefined,
+          updatedAt: new Date().toISOString(),
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     return res.json({
       message: "Order updated Successfully",
     });
@@ -546,6 +668,29 @@ export const updateOrderStatusRider = TryCatch(async (req, res) => {
         },
       },
     );
+
+    if (order.customerEmail) {
+      await publishEmailNotification({
+        idempotencyKey: `order_${order._id}_status_delivered`,
+        type: "ORDER_STATUS_UPDATE",
+        recipient: {
+          email: order.customerEmail,
+          name: order.customerName || "Customer",
+          role: "customer",
+        },
+        data: {
+          orderId: order._id.toString(),
+          customerName: order.customerName || "Customer",
+          restaurantName: order.restaurantName,
+          status: "delivered",
+          statusTitle: "Order Delivered",
+          statusMessage: "Your order has been delivered. Enjoy your meal!",
+          deliveryAddress: order.deliveryAddress?.fromattedAddress || "",
+          updatedAt: new Date().toISOString(),
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     return res.json({
       message: "Order updated Successfully",

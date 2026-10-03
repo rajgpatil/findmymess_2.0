@@ -1,0 +1,34 @@
+{
+  "name": "notification",
+  "version": "1.0.0",
+  "description": "Background Email Notification Microservice for FindMyMess",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && node --input-type=module -e \"import fs from 'fs'; fs.cpSync('src/templates', 'dist/templates', {recursive: true});\"",
+    "start": "nodemon --exec \"node --loader ts-node/esm\" src/index.ts",
+    "dev": "concurrently \"tsc --watch\" \"node --watch dist/index.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "resend": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.6",
+    "@types/cors": "^2.8.17",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.1",
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

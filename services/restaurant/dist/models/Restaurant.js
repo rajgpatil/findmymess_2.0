@@ -14,6 +14,12 @@ const schema = new Schema({
         type: String,
         required: true,
     },
+    ownerEmail: {
+        type: String,
+    },
+    ownerName: {
+        type: String,
+    },
     phone: {
         type: Number,
         required: true,

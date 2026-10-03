@@ -5,6 +5,8 @@ export interface IRestaurant extends Document {
   description?: string;
   image: string;
   ownerId: string;
+  ownerEmail?: string;
+  ownerName?: string;
   phone: number;
   isVerified: boolean;
 
@@ -32,6 +34,12 @@ const schema = new Schema<IRestaurant>(
     ownerId: {
       type: String,
       required: true,
+    },
+    ownerEmail: {
+      type: String,
+    },
+    ownerName: {
+      type: String,
     },
     phone: {
       type: Number,

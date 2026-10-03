@@ -1,0 +1,92 @@
+<%- include('layout/header', { 
+  title: 'Delivery Assigned - FindMyMess Rider',
+  previewText: `New delivery assigned: Order #${typeof orderId !== 'undefined' ? orderId : ''} from ${typeof restaurantName !== 'undefined' ? restaurantName : ''}. Payout: ₹${typeof riderAmount !== 'undefined' ? riderAmount : 0}`
+}) %>
+
+<!-- Hero Header -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+  <tr>
+    <td align="center">
+      <div style="display: inline-block; width: 56px; height: 56px; background-color: #EFF6FF; border-radius: 50%; text-align: center; line-height: 56px; font-size: 28px; color: #2563EB; margin-bottom: 12px;">
+        🛵
+      </div>
+      <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 800; color: #0F172A;">
+        New Delivery Assignment!
+      </h1>
+      <p style="margin: 0; font-size: 14px; color: #64748B;">
+        Hi <%= typeof riderName !== 'undefined' ? riderName : 'Partner' %>, you have accepted delivery for Order <strong>#<%= typeof orderId !== 'undefined' ? orderId : '' %></strong>.
+      </p>
+    </td>
+  </tr>
+</table>
+
+<!-- Payout & Distance Highlight Box -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; margin-bottom: 24px;">
+  <tr>
+    <td style="padding: 18px 24px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td align="left">
+            <span style="display: block; font-size: 12px; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 0.5px;">
+              Delivery Payout
+            </span>
+            <span style="font-size: 26px; font-weight: 800; color: #065F46;">
+              ₹<%= typeof riderAmount !== 'undefined' ? riderAmount : 0 %>
+            </span>
+          </td>
+          <td align="right">
+            <span style="display: block; font-size: 12px; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 0.5px;">
+              Total Distance
+            </span>
+            <span style="font-size: 22px; font-weight: 700; color: #065F46;">
+              ~<%= typeof distance !== 'undefined' ? distance : 0 %> km
+            </span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- Pickup Details Card -->
+<div style="border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; margin-bottom: 16px;">
+  <div style="background-color: #F8FAFC; padding: 12px 16px; border-bottom: 1px solid #E2E8F0;">
+    <span style="font-size: 12px; font-weight: 700; color: #E23744; text-transform: uppercase; letter-spacing: 0.5px;">
+      📍 STEP 1: PICKUP FROM RESTAURANT
+    </span>
+  </div>
+  <div style="padding: 16px; background-color: #FFFFFF;">
+    <h4 style="margin: 0 0 6px 0; font-size: 16px; font-weight: 700; color: #0F172A;">
+      <%= restaurantName %>
+    </h4>
+    <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569; line-height: 1.4;">
+      <%= typeof restaurantAddress !== 'undefined' && restaurantAddress ? restaurantAddress : 'Address on restaurant profile' %>
+    </p>
+    <% if (typeof restaurantPhone !== 'undefined' && restaurantPhone) { %>
+      <p style="margin: 0; font-size: 13px; color: #2563EB; font-weight: 600;">
+        📞 Call Restaurant: <%= restaurantPhone %>
+      </p>
+    <% } %>
+  </div>
+</div>
+
+<!-- Drop Details Card -->
+<div style="border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden; margin-bottom: 24px;">
+  <div style="background-color: #F8FAFC; padding: 12px 16px; border-bottom: 1px solid #E2E8F0;">
+    <span style="font-size: 12px; font-weight: 700; color: #16A34A; text-transform: uppercase; letter-spacing: 0.5px;">
+      🏁 STEP 2: DROP OFF TO CUSTOMER
+    </span>
+  </div>
+  <div style="padding: 16px; background-color: #FFFFFF;">
+    <p style="margin: 0 0 8px 0; font-size: 14px; color: #0F172A; font-weight: 500; line-height: 1.4;">
+      <%= deliveryAddress %>
+    </p>
+    <% if (typeof customerPhone !== 'undefined' && customerPhone) { %>
+      <p style="margin: 0; font-size: 13px; color: #2563EB; font-weight: 600;">
+        📞 Call Customer: +91 <%= customerPhone %>
+      </p>
+    <% } %>
+  </div>
+</div>
+
+<%- include('layout/footer') %>

@@ -3,6 +3,7 @@ services/auth/node_modules/*
 services/auth/dist/*
 services/auth/build/*
 services/restaurant/node_modules/*
+services/restaurant/dist/*
 services/utils/node_modules/*
 services/realtime/node_modules/*
 services/realtime/dist/*
@@ -12,5 +13,8 @@ services/rider/package-lock.json
 services/admin/node_modules/*
 services/admin/dist/*
 services/admin/package-lock.json
+services/notification/node_modules/*
+services/notification/dist/*
 Theme/*
 Implementation.md
+email_implementation_plan.md

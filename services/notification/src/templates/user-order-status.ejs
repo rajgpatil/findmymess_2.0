@@ -1,0 +1,117 @@
+<%- include('layout/header', { 
+  title: `${typeof statusTitle !== 'undefined' ? statusTitle : 'Order Update'} - FindMyMess`,
+  previewText: `Order #${typeof orderId !== 'undefined' ? orderId : ''} update: ${typeof statusMessage !== 'undefined' ? statusMessage : (typeof statusTitle !== 'undefined' ? statusTitle : '')}`
+}) %>
+
+<!-- Status Banner -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+  <tr>
+    <td align="center">
+      <% 
+        let badgeBg = '#FEF2F2';
+        let badgeColor = '#E23744';
+        let iconSymbol = '&#9203;';
+        const currentStatus = typeof status !== 'undefined' ? status : 'updated';
+
+        if (currentStatus === 'delivered') {
+          badgeBg = '#ECFDF5';
+          badgeColor = '#10B981';
+          iconSymbol = '&#10003;';
+        } else if (currentStatus === 'picked_up' || currentStatus === 'rider_assigned') {
+          badgeBg = '#EFF6FF';
+          badgeColor = '#3B82F6';
+          iconSymbol = '&#128692;';
+        } else if (currentStatus === 'cancelled') {
+          badgeBg = '#FEF2F2';
+          badgeColor = '#EF4444';
+          iconSymbol = '&#10005;';
+        } else if (currentStatus === 'preparing') {
+          badgeBg = '#FFFBEB';
+          badgeColor = '#F59E0B';
+          iconSymbol = '&#127859;';
+        }
+      %>
+      <div style="display: inline-block; width: 56px; height: 56px; background-color: <%= badgeBg %>; border-radius: 50%; text-align: center; line-height: 56px; font-size: 26px; color: <%= badgeColor %>; margin-bottom: 12px;">
+        <%- iconSymbol %>
+      </div>
+      <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 700; color: #0F172A;">
+        <%= typeof statusTitle !== 'undefined' ? statusTitle : 'Order Status Updated' %>
+      </h1>
+      <p style="margin: 0; font-size: 15px; color: #475569; max-width: 440px; line-height: 1.5;">
+        <%= typeof statusMessage !== 'undefined' ? statusMessage : 'Your order status has been updated.' %>
+      </p>
+    </td>
+  </tr>
+</table>
+
+<!-- Order Context Details Box -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 24px;">
+  <tr>
+    <td style="padding: 16px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td align="left" style="font-size: 13px; color: #64748B;">
+            Order ID: <strong style="color: #0F172A;">#<%= typeof orderId !== 'undefined' ? orderId : '' %></strong>
+          </td>
+          <td align="right" style="font-size: 13px; color: #64748B;">
+            Restaurant: <strong style="color: #0F172A;"><%= typeof restaurantName !== 'undefined' ? restaurantName : '' %></strong>
+          </td>
+        </tr>
+        <tr>
+          <td align="left" style="padding-top: 8px; font-size: 12px; color: #94A3B8;">
+            Current Status: <span style="display: inline-block; font-weight: 600; text-transform: uppercase; background-color: <%= badgeBg %>; color: <%= badgeColor %>; padding: 2px 8px; border-radius: 4px;"><%= currentStatus %></span>
+          </td>
+          <td align="right" style="padding-top: 8px; font-size: 12px; color: #94A3B8;">
+            Updated: <%= new Date(typeof updatedAt !== 'undefined' && updatedAt ? updatedAt : Date.now()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) %>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- Rider Info Box (If Assigned/Out for Delivery) -->
+<% if (typeof riderName !== 'undefined' && riderName) { %>
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; margin-bottom: 24px;">
+    <tr>
+      <td style="padding: 16px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td valign="middle" width="40">
+              <div style="width: 36px; height: 36px; background-color: #DCFCE7; border-radius: 50%; text-align: center; line-height: 36px; font-size: 18px;">
+                🛵
+              </div>
+            </td>
+            <td valign="middle" style="padding-left: 8px;">
+              <p style="margin: 0; font-size: 12px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">
+                Assigned Delivery Partner
+              </p>
+              <p style="margin: 2px 0 0 0; font-size: 15px; font-weight: 600; color: #14532D;">
+                <%= riderName %>
+              </p>
+            </td>
+            <% if (typeof riderPhone !== 'undefined' && riderPhone) { %>
+              <td align="right" valign="middle">
+                <span style="font-size: 13px; font-weight: 600; color: #15803D;">
+                  📞 <%= riderPhone %>
+                </span>
+              </td>
+            <% } %>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+<% } %>
+
+<!-- Delivery Destination Box -->
+<div style="border-left: 3px solid #E23744; background-color: #FDF2F2; padding: 14px 16px; border-radius: 4px; margin-bottom: 24px;">
+  <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #991B1B; letter-spacing: 0.5px;">
+    Delivery Address
+  </p>
+  <p style="margin: 0; font-size: 14px; font-weight: 500; color: #1E293B;">
+    <%= deliveryAddress %>
+  </p>
+</div>
+
+<%- include('layout/footer') %>

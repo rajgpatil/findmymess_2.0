@@ -45,6 +45,8 @@ export const addRestraunt = TryCatch(async (req, res) => {
         phone,
         image: uploadResult.url,
         ownerId: user._id,
+        ownerEmail: user.email,
+        ownerName: user.name,
         autoLocation: {
             type: "Point",
             coordinates: [Number(longitude), Number(latitude)],

@@ -2,9 +2,12 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IOrder extends Document {
   userId: string;
+  customerEmail: string;
+  customerName: string;
   restaurantId: string;
   restaurantName: string;
   riderId?: string | null;
+  riderEmail?: string | null;
   riderPhone: number | null;
   riderName: string | null;
   distance: number;
@@ -56,6 +59,15 @@ const OrderSchema = new Schema<IOrder>(
       type: String,
       required: true,
     },
+    customerEmail: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    customerName: {
+      type: String,
+      required: true,
+    },
     restaurantId: {
       type: String,
       required: true,
@@ -65,6 +77,10 @@ const OrderSchema = new Schema<IOrder>(
       required: true,
     },
     riderId: {
+      type: String,
+      default: null,
+    },
+    riderEmail: {
       type: String,
       default: null,
     },

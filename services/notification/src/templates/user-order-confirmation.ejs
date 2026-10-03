@@ -1,0 +1,132 @@
+<%- include('layout/header', { 
+  title: 'Order Confirmed - FindMyMess',
+  previewText: `Order #${orderId} confirmed! ${restaurantName} has received your order.`
+}) %>
+
+<!-- Hero Status Badge -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+  <tr>
+    <td align="center">
+      <div style="display: inline-block; width: 48px; height: 48px; background-color: #ECFDF5; border-radius: 50%; text-align: center; line-height: 48px; font-size: 24px; color: #10B981; margin-bottom: 12px;">
+        &#10003;
+      </div>
+      <h1 style="margin: 0 0 6px 0; font-size: 22px; font-weight: 700; color: #0F172A;">
+        Order Placed Successfully!
+      </h1>
+      <p style="margin: 0; font-size: 14px; color: #64748B;">
+        Hi <%= customerName %>, thank you for ordering with <strong>FindMyMess</strong>.
+      </p>
+    </td>
+  </tr>
+</table>
+
+<!-- Order Details Header Box -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; margin-bottom: 24px;">
+  <tr>
+    <td style="padding: 16px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td align="left" style="font-size: 13px; color: #64748B;">
+            Order ID: <strong style="color: #0F172A;">#<%= orderId %></strong>
+          </td>
+          <td align="right" style="font-size: 13px; color: #64748B;">
+            Restaurant: <strong style="color: #0F172A;"><%= restaurantName %></strong>
+          </td>
+        </tr>
+        <tr>
+          <td align="left" style="padding-top: 8px; font-size: 12px; color: #94A3B8;">
+            Payment: <span style="display: inline-block; text-transform: uppercase; background-color: #EEF2F6; color: #334155; padding: 2px 6px; border-radius: 4px; font-weight: 600;"><%= paymentMethod %></span> (Paid)
+          </td>
+          <td align="right" style="padding-top: 8px; font-size: 12px; color: #94A3B8;">
+            Date: <%= new Date(typeof createdAt !== 'undefined' && createdAt ? createdAt : Date.now()).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- Items Ordered Table -->
+<h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #1E293B;">
+  Items Ordered
+</h3>
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; margin-bottom: 20px;">
+  <thead>
+    <tr style="border-bottom: 2px solid #E2E8F0;">
+      <th align="left" style="padding: 8px 0; font-size: 12px; font-weight: 600; color: #64748B; text-transform: uppercase;">Item</th>
+      <th align="center" style="padding: 8px 0; font-size: 12px; font-weight: 600; color: #64748B; text-transform: uppercase;">Qty</th>
+      <th align="right" style="padding: 8px 0; font-size: 12px; font-weight: 600; color: #64748B; text-transform: uppercase;">Price</th>
+      <th align="right" style="padding: 8px 0; font-size: 12px; font-weight: 600; color: #64748B; text-transform: uppercase;">Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (items && items.length > 0) { %>
+      <% items.forEach(function(item) { %>
+        <tr style="border-bottom: 1px solid #F1F5F9;">
+          <td align="left" style="padding: 12px 0; font-size: 14px; font-weight: 500; color: #1E293B;">
+            <%= item.name %>
+          </td>
+          <td align="center" style="padding: 12px 0; font-size: 14px; color: #64748B;">
+            <%= item.quantity %>
+          </td>
+          <td align="right" style="padding: 12px 0; font-size: 14px; color: #64748B;">
+            ₹<%= item.price %>
+          </td>
+          <td align="right" style="padding: 12px 0; font-size: 14px; font-weight: 600; color: #1E293B;">
+            ₹<%= item.total || (item.price * item.quantity) %>
+          </td>
+        </tr>
+      <% }); %>
+    <% } %>
+  </tbody>
+</table>
+
+<!-- Price Breakdown -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F8FAFC; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+  <tr>
+    <td style="padding: 16px;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td style="padding: 4px 0; font-size: 14px; color: #64748B;">Subtotal</td>
+          <td align="right" style="padding: 4px 0; font-size: 14px; color: #1E293B; font-weight: 500;">₹<%= subtotal %></td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; font-size: 14px; color: #64748B;">Delivery Fee</td>
+          <td align="right" style="padding: 4px 0; font-size: 14px; color: <%= deliveryFee === 0 ? '#10B981' : '#1E293B' %>; font-weight: 500;">
+            <%= deliveryFee === 0 ? 'FREE' : '₹' + deliveryFee %>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; font-size: 14px; color: #64748B;">Platform Fee</td>
+          <td align="right" style="padding: 4px 0; font-size: 14px; color: #1E293B; font-weight: 500;">₹<%= platformFee %></td>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding: 8px 0;">
+            <div style="height: 1px; background-color: #E2E8F0;"></div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; font-size: 16px; font-weight: 700; color: #0F172A;">Total Paid</td>
+          <td align="right" style="padding: 4px 0; font-size: 18px; font-weight: 800; color: #E23744;">₹<%= totalAmount %></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- Delivery Address Box -->
+<div style="border-left: 3px solid #E23744; background-color: #FDF2F2; padding: 14px 16px; border-radius: 4px; margin-bottom: 24px;">
+  <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #991B1B; letter-spacing: 0.5px;">
+    Delivery Destination
+  </p>
+  <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 500; color: #1E293B;">
+    <%= deliveryAddress %>
+  </p>
+  <% if (typeof customerPhone !== 'undefined' && customerPhone) { %>
+    <p style="margin: 0; font-size: 13px; color: #64748B;">
+      Contact: <strong>+91 <%= customerPhone %></strong>
+    </p>
+  <% } %>
+</div>
+
+<%- include('layout/footer') %>

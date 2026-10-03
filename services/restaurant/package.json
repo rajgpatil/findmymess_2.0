@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "nodemon --exec \"node --loader ts-node/esm\" src/index.ts",
+    "start": "tsc && node dist/index.js",
     "dev": "concurrently \"tsc --watch\" \"node --watch dist/index.js\""
   },
   "keywords": [],
